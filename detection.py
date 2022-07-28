@@ -1,7 +1,6 @@
 '''
-find face and crop and embedding
+프로필 사진을 url로 받아오고 실시간 비디오로 임베딩 값을 비교한다.
 
-실행 시간 : 0.5425937175750732
 '''
 import os
 import cv2
@@ -20,11 +19,9 @@ import time
 model_name='res10_300x300_ssd_iter_140000.caffemodel'
 prototxt_name='deploy.prototxt.txt'
 
-
 def get_face_embedding(img): # img = 이미지 자체
     '''얼굴을 인식하고 임베딩 값을 구한다.'''
     return face_recognition.face_encodings(img)
-
 
 def crop_embedding(img):
 
