@@ -11,62 +11,72 @@ import time
 # start = time.time()
 # print("time :", time.time() - start)
 import urllib.request
-
+import numpy
 import time
+
+from imutils.video import VideoStream
+from imutils.video import FPS
+import imutils
 
 model_name='res10_300x300_ssd_iter_140000.caffemodel'
 prototxt_name='deploy.prototxt.txt'
 
 
 def detection(url, profile_img_emb):
-    
+    detector = cv2.dnn.readNetFromCaffe(prototxt_name, model_name)
     count = 0
     if count == 20:
         return
     
-    cap = cv2.VideoCapture(0)
-    
+    vs = VideoStream(src=0).start()
+    fps = FPS().start()
     face = ''
     while True:
-        ret, frame = cap.read()
+        frame = vs.read()
+        frame = imutils.resize(frame,width=600)
         
-        (height, width) = frame.shape[:2]
-        model=cv2.dnn.readNetFromCaffe(prototxt_name,model_name)
-        blob=cv2.dnn.blobFromImage(cv2.resize(frame,(300,300)),1.0, (300,300),(104.0,177.0,123.0))
+        (h, w) = frame.shape[:2]
         
-        model.setInput(blob)
+        imageBlob = cv2.dnn.blobFromImage(cv2.resize(frame,(300,300)),1.0, (300,300),(104.0,177.0,123.0), swapRB=False, crop=False)
         
-        detections=model.forward()
+        detector.setInput(imageBlob)
+        detections = detector.forward()
         
-        for i in range(0, detections.shape[2]):
-        
-            confidence = detections[0, 0, i, 2]
-            min_confidence=0.5
-                
-            if confidence > min_confidence:
-                
-                box = detections[0, 0, i, 3:7] * np.array([width, height, width, height])
+        for i in range(0,detections.shape[2]):
+            confidence = detections[0,0,i,2]
+            
+            if confidence > 0.5:
+                box = detections[0,0,i,3:7] * np.array([w,h,w,h])
                 (startX, startY, endX, endY) = box.astype("int")
                 
-                if height > endY and width > endX : #예외처리   
-                    face = frame[startY:endY,startX:endX]
+                face = frame[startY:endY, startX:endX]
+                (fH, fW) = face.shape[:2]
+                
+                if fW < 20 or fH < 20:
+                    continue
                     
-        cv2.imshow("Frame", frame)
+                faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255,(96, 96), (0, 0, 0), swapRB=True, crop=False)
+                
+                y = startY - 10 if startY - 10 > 10 else startY + 10
+                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
         
-        now_face = face_recognition.face_encodings(face)
+        cv2.imshow("Frame", frame)
+
+        now_face = face_recognition.face_encodings(frame)
 
         # 얼굴인식 안되면 continue
         if now_face == []:
             continue
         
         test = np.linalg.norm(now_face[0] - profile_img_emb, ord=2)
-            
+        
         try:
             test
         except:
             return
         
-    
+        # print(numpy.dot(A, B)/(numpy.linalg.norm(A)*numpy.linalg.norm(B)))
+
         if test < 0.31:
             print(test, '통과')
             print(url)
@@ -81,8 +91,9 @@ def detection(url, profile_img_emb):
         if key == ord("q"):
             break
         
-    cap.release()
+    fps.stop()
     cv2.destroyAllWindows()
+    vs.stop()
     return
 
 
@@ -111,7 +122,6 @@ def run():
     for res in urlopen:
         image_nparray = np.asarray(bytearray(res), dtype=np.uint8)
         image = cv2.imdecode(image_nparray, cv2.IMREAD_COLOR)
-        
         detection(url, face_recognition.face_encodings(image)[0])
     return
        
