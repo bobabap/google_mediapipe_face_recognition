@@ -11,7 +11,6 @@ import time
 # start = time.time()
 # print("time :", time.time() - start)
 import urllib.request
-import numpy
 import time
 
 from imutils.video import VideoStream
@@ -122,6 +121,8 @@ def run():
     for res in urlopen:
         image_nparray = np.asarray(bytearray(res), dtype=np.uint8)
         image = cv2.imdecode(image_nparray, cv2.IMREAD_COLOR)
+        
+        
         detection(url, face_recognition.face_encodings(image)[0])
     return
        
@@ -130,17 +131,3 @@ def run():
             
 if __name__ == '__main__':
     run()
-        
-        
-    # datagen = ImageDataGenerator(
-    #     featurewise_center=True,
-    #     featurewise_std_normalization=True,
-    #     rotation_range=20,
-    #     width_shift_range=0.2,
-    #     height_shift_range=0.2,
-    #     horizontal_flip=True)
-
-    # # 특성별 정규화에 필요한 수치를 계산합니다
-    # # (영위상 성분분석 백색화를 적용하는 경우, 표준편차, 평균, 그리고 주성분이 이에 해당합니다)
-    # datagen.fit(profile_list)
-    # datagen.fit(self_list)
