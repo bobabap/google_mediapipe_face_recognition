@@ -44,7 +44,6 @@ def rotate_img(image):
     result = face_mesh.process(image)
     height, width = image.shape[:2]
     
-    
     for facial_landmarks in result.multi_face_landmarks:
         x_min = width
         x_max = 0
@@ -203,7 +202,7 @@ def guide_image_landmark(p_height, p_width): # 변형할 이미지의 shape
         
         
     # print([[left_eye_x, left_eye_y], [right_eye_x, right_eye_y], [mid_nose_x, mid_nose_y]])
-    print('guide image shape:',g_image.shape)
+    # print('guide image shape:',g_image.shape)
     # cv2.imshow('g_image', g_image) # 가이드 이미지 확인
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
@@ -259,18 +258,19 @@ def geometric_deformation(image, result):
         right_eye_y = int(facial_landmarks.landmark[249].y * height)
 
 
-    print('profile image shape:',image.shape)
+    # print('profile image shape:',image.shape)
     
     '''이미지 기하학 변형 부분'''
     # 가이드 얼굴 랜드마크 정면
     g_left_eye_x, g_left_eye_y, g_right_eye_x, g_right_eye_y, g_mid_nose_x, g_mid_nose_y, g_mid_chin_x, g_mid_chin_y = guide_image_landmark(height, width)
+    
     cv2.imshow('image', image) # 변형 확인
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
     
     M = np.float32([[1,0,-(g_mid_nose_x-mid_nose_x)],[0,1,-(g_mid_nose_y-mid_nose_y)]])
-    image = cv2.warpAffine(image, M,(width - (g_mid_nose_x-mid_nose_x), height - (g_mid_nose_y-mid_nose_y)))
+    image = cv2.warpAffine(image, M, (width - (g_mid_nose_x-mid_nose_x), height - (g_mid_nose_y-mid_nose_y)))
         
     cv2.imshow('image', image) # 변형 확인
     cv2.waitKey(0)
@@ -284,27 +284,26 @@ def geometric_deformation(image, result):
     pts2 = np.float32([[g_left_eye_x, g_left_eye_y], [g_right_eye_x, g_right_eye_y], [g_mid_nose_x, g_mid_nose_y]]) # 변형 될 위치 삼각 좌표
     
     # # ---2 변환 전 좌표를 이미지에 표시 빨간색
-    # cv2.circle(image, (g_left_eye_x,left_eye_y), 4, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(image, (g_right_eye_x,right_eye_y), 4, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(image, (g_mid_chin_x,g_mid_chin_y), 4, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(image, (width//2, height//2), 4, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.rectangle(image, (x_max,y_min), (x_min,y_max), (255, 0, 255), 1)
+    cv2.circle(image, (g_left_eye_x,left_eye_y), 3, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (g_right_eye_x,right_eye_y), 3, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (g_mid_chin_x,g_mid_chin_y), 3, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (width//2, height//2), 3, (255, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.rectangle(image, (x_max,y_min), (x_min,y_max), (255, 0, 255), 1)
     
     #---3 짝지은 3개의 좌표로 변환 행렬 계산
-    mtrx = cv2.getAffineTransform(pts1, pts2)
+    mtrx = cv2.getAffineTransform(pts1, pts2)  #####################################
     
     #---4 어핀 변환 적용  민트색  
-    dst = cv2.warpAffine(image, mtrx, (int(width - (g_mid_nose_x-mid_nose_x)), height - (g_mid_nose_y-mid_nose_y)))
-    # # 변환 후 좌표를 이미지에 표시 민트색
-    # cv2.circle(dst, (left_eye_x,left_eye_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(dst, (right_eye_x,right_eye_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(dst, (mid_nose_x,mid_nose_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
-    # cv2.circle(dst, (width//2, height//2), 6, (255, 255, 0), -1)
-    # cv2.rectangle(dst, (x_max,y_min), (x_min,y_max), (255, 255, 0), 1)
+    image = cv2.warpAffine(image, mtrx, (int(width - (g_mid_nose_x-mid_nose_x)), height - (g_mid_nose_y-mid_nose_y))) #########################################
+    # 변환 후 좌표를 이미지에 표시 민트색
+    cv2.circle(image, (left_eye_x,left_eye_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (right_eye_x,right_eye_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (mid_nose_x,mid_nose_y), 4, (0, 0, 255), -1) # 원을 그릴 위치(x,y), 점 크기, (100, 100, 0)RGB
+    cv2.circle(image, (width//2, height//2), 6, (255, 255, 0), -1)
+    cv2.rectangle(image, (x_max,y_min), (x_min,y_max), (255, 255, 0), 1)
     
-    dst = cv2.resize(dst, (width, height), interpolation=INTER_LINEAR)
-    print(dst.shape)
-    cv2.imshow('affin', dst) # 변형 확인
+    image = cv2.resize(image, (width, height), interpolation=INTER_LINEAR) ########################################
+    cv2.imshow('affin', image) # 변형 확인
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
@@ -315,13 +314,15 @@ def geometric_deformation(image, result):
         x_max = 0
         y_min = height
         y_max = 0
-        for i in range(0, 468): # [10, 152], range(0, 468)
+        for i in range(0, 468): # [10, 152], range(0, 468) ##############################################
             pt = facial_landmarks.landmark[i]
             x = int(pt.x * width)
             y = int(pt.y * height)
             
-            cv2.circle(dst, (x, y), 1, (250, 5, 0), -1)
-    cv2.imshow('affin_test', dst) # 변형 확인
+            cv2.circle(image, (x, y), 1, (250, 5, 0), -1)
+            
+    image = cv2.resize(image, (300, 300), interpolation=INTER_LINEAR) #################################################
+    cv2.imshow('affin_test', image) # 변형 확인
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     #----------------------------------------------------
@@ -329,15 +330,16 @@ def geometric_deformation(image, result):
     geometrically_modified = image.copy()
     '''최종 얼굴에 랜드마크 표시하기'''
     # # 얼굴이 있는 최 상하좌우 점
-    # cv2.circle(geometrically_modified, (mid_nose_x, mid_nose_y), 4, (0, 255, 255), -1)
-    # cv2.circle(geometrically_modified, (x_max,y_min), 2, (255, 255, 0), -1)
-    # cv2.circle(geometrically_modified, (x_min,y_max), 2, (255, 255, 0), -1)
-    # # # 얼굴 박스
-    # cv2.circle(geometrically_modified, (width//2, height//2), 2, (255, 255, 0), -1)
-    # cv2.rectangle(geometrically_modified, (x_max,y_min), (x_min,y_max), (0, 50, 0), 1)
-    # cv2.imshow('Image', geometrically_modified)
-    # cv2.waitKey(0)
+    cv2.circle(geometrically_modified, (mid_nose_x, mid_nose_y), 4, (0, 255, 255), -1)
+    cv2.circle(geometrically_modified, (x_max,y_min), 2, (255, 255, 0), -1)
+    cv2.circle(geometrically_modified, (x_min,y_max), 2, (255, 255, 0), -1)
+    # # 얼굴 박스
+    cv2.circle(geometrically_modified, (width//2, height//2), 2, (255, 255, 0), -1)
+    cv2.rectangle(geometrically_modified, (x_max,y_min), (x_min,y_max), (0, 50, 0), 1)
+    cv2.imshow('Image', geometrically_modified)
+    cv2.waitKey(0)
     # ----------------------------------------------------
+    # final_image = dst.copy()
     final_landmark = []
     return image, final_landmark
 
@@ -364,8 +366,8 @@ def conversion(image):
     
     # centerd
     centerd_image, Reset_result = centerd_img(rotate_image, Reset_result)
-    cv2.imshow('Image', centerd_image)
-    cv2.waitKey(0)
+    # cv2.imshow('Image', centerd_image)
+    # cv2.waitKey(0)
     # ---------------------
     
     # geometric_deformation
@@ -375,29 +377,3 @@ def conversion(image):
     # ---------------------
     
     return final_image, landmark
-
-
-
-
-def video_conversion(image):
-    # print(image.shape)
-    if image.shape[0] > 1500 or image.shape[1] > 1500: # 너비 높이 1500 이상이면 보간법으로 이미지 축소
-        image = cv2.resize(image, (0, 0), fx=0.4, fy=0.4, interpolation=cv2.INTER_LINEAR)
-    # print('-->', image.shape)
-    
-    '''실행 속도 높이기위해 BGR로 색 변형'''
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    
-    original_image = image.copy()
-
-    # rotate
-    rotate_image, Reset_result = rotate_img(original_image)
-    
-    # centerd
-    centerd_image, Reset_result = centerd_img(rotate_image, Reset_result)
-    
-    # geometric_deformation
-    final_image, _ = geometric_deformation(centerd_image, Reset_result)
-    
-    # 비디오에는 변형된 이미지만 전달
-    return final_image
