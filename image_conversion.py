@@ -104,7 +104,7 @@ def centerd_img(image, result):
             if y > y_max:
                 y_max = y  
         
-        '''얼굴 중앙 이동'''
+        '''얼굴 중앙 이동 팁: x 좌표는 왼쪽에서 오른쪽으로 밀고 y 좌표는 위에서 아래로 민다'''
         move_x = int(width/2) - (int(x_min) + int(((x_max - x_min)/2)))
         move_y = int(height/2) - (int(y_min) + int(((y_max - y_min)/2)))
             
@@ -213,29 +213,31 @@ def geometric_deformation(image, result):
 
     
     '''이미지 기하학 변형 부분'''
-    # cv2.circle(image, (mid_chin_x,mid_head_y), 1, (250, 5, 0), -1) # 원을 그릴 위치(x,y), 3개의 픽셀, (100, 100, 0)RGB, 점 색상
-    # cv2.circle(image, (mid_head_x,mid_head_y), 1, (250, 5, 0), -1) # 원을 그릴 위치(x,y), 3개의 픽셀, (100, 100, 0)RGB, 점 색상
-    # cv2.imshow('origin',image)
-    # rows, cols = image.shape[:2]
+    cv2.circle(image, (mid_nose_x,mid_nose_y), 1, (250, 5, 0), -1) # 원을 그릴 위치(x,y), 3개의 픽셀, (100, 100, 0)RGB, 점 색상
+    cv2.circle(image, (mid_head_x,mid_head_y), 1, (250, 5, 0), -1) # 원을 그릴 위치(x,y), 3개의 픽셀, (100, 100, 0)RGB, 점 색상
+    cv2.imshow('origin',image)
+    rows, cols = image.shape[:2]
     # 중앙으로 이동
 
     # ---① 변환 전, 후 각 3개의 좌표 생성
-    # pts1 = np.float32([[mid_head_x, mid_head_y], [mid_nose_x, mid_nose_y], [mid_chin_x, mid_chin_y]])
-    # pts2 = np.float32([[width//2, height//2 - (height//2-mid_head_y)], [width//2, height//2], [width//2, height//2 + (height//2-mid_chin_y)]])
+    pts1 = np.float32([[left_eye_x, left_eye_y], [right_eye_x, right_eye_y], [mid_nose_x, mid_nose_y]]) # 원래 삼각 좌표
+    
+    '''이 부분 고민 팁: x 좌표는 왼쪽에서 오른쪽으로 밀고 y 좌표는 위에서 아래로 민다'''
+    pts2 = np.float32([[left_eye_x+10, left_eye_y], [right_eye_x+40, right_eye_y], [mid_nose_x+20, mid_nose_y]]) # 변형 될 위치 삼각 좌표
 
-    # # ---② 변환 전 좌표를 이미지에 표시
-    # cv2.circle(image, (mid_head_x, mid_head_y), 5, (255,0), -1)
-    # cv2.circle(image, (mid_nose_x, mid_nose_y), 5, (0,255,0), -1)
-    # cv2.circle(image, (mid_chin_x, mid_chin_y), 5, (0,0,255), -1)
+    # ---② 변환 전 좌표를 이미지에 표시
+    cv2.circle(image, (mid_head_x, mid_head_y), 5, (255,0), -2)
+    cv2.circle(image, (mid_nose_x, mid_nose_y), 5, (0,255,0), -2)
+    cv2.circle(image, (mid_chin_x, mid_chin_y), 5, (0,0,255), -2)
 
-    # #---③ 짝지은 3개의 좌표로 변환 행렬 계산
-    # mtrx = cv2.getAffineTransform(pts1, pts2)
-    # #---④ 어핀 변환 적용
-    # dst = cv2.warpAffine(image, mtrx, (int(cols*1.5), rows))
+    #---③ 짝지은 3개의 좌표로 변환 행렬 계산
+    mtrx = cv2.getAffineTransform(pts1, pts2)
+    #---④ 어핀 변환 적용
+    dst = cv2.warpAffine(image, mtrx, (int(cols*1.5), rows))
 
-    # cv2.imshow('affin', dst) # 변형 확인
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow('affin', dst) # 변형 확인
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     # ----------------------------------------------------
     
     
@@ -271,20 +273,20 @@ def conversion(image):
     
     # rotate
     rotate_image, Reset_result = rotate_img(original_image)
-    cv2.imshow('Image', rotate_image)
-    cv2.waitKey(0)
+    # cv2.imshow('Image', rotate_image)
+    # cv2.waitKey(0)
     # ---------------------
     
     # centerd
     centerd_image, Reset_result = centerd_img(rotate_image, Reset_result)
-    cv2.imshow('Image', centerd_image)
-    cv2.waitKey(0)
+    # cv2.imshow('Image', centerd_image)
+    # cv2.waitKey(0)
     # ---------------------
     
     # geometric_deformation
     final_image, landmark = geometric_deformation(centerd_image, Reset_result)
-    cv2.imshow('Image', final_image)
-    cv2.waitKey(0)
+    # cv2.imshow('Image', final_image)
+    # cv2.waitKey(0)
     # ---------------------
     
     return final_image, landmark
