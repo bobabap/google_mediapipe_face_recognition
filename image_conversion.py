@@ -171,8 +171,8 @@ def geometric_deformation(image, result):
         mid_chin_x = int(facial_landmarks.landmark[152].x * width) # 턱끝
         mid_chin_y = int(facial_landmarks.landmark[152].y * height)
         
-        left_eye_y = int(facial_landmarks.landmark[7].y * height) # 왼쪽 눈
-        left_eye_x = int(facial_landmarks.landmark[7].x * width)
+        left_eye_x = int(facial_landmarks.landmark[7].x * width) # 왼쪽 눈
+        left_eye_y = int(facial_landmarks.landmark[7].y * height)
         
         right_eye_x = int(facial_landmarks.landmark[249].x * width) # 오른쪽 눈
         right_eye_y = int(facial_landmarks.landmark[249].y * height)
