@@ -5,6 +5,7 @@ import urllib.request
 import imutils
 import math
 from image_conversion import conversion, video_conversion
+from url_img_load import url_img
 import face_recognition
 from sklearn import svm
 
@@ -17,46 +18,10 @@ face_mesh = mp_face_mesh.FaceMesh(
                                 refine_landmarks=True,
                                 min_detection_confidence=0.5)    
 
-def url_img():
-    faces_url_list = [] # url리스트
-    '''faces.txt 에서 url리스트를 가져온다'''
-    with open('faces.txt', "r") as f:
-        data = f.readlines()
-        for line in data:
-            extension = line.split('.')[-1]
-            if extension == 'jpg' or 'png' or 'jpeg' or 'jfif': # 확장자 확인
-                pass
-            else:
-                print('Allow png, jpg, jpeg, jfif extensions only')
-            
-            faces_url_list.append(line.strip())
-
-    '''url list'''
-    urlopen = []
-    # segmentation fault 방지를 위해 미리 res를 저장하고 사용
-    for url in faces_url_list:
-        req = urllib.request.Request(url, headers = {"User-Agent" : "Mozilla/5.0"})
-        res = urllib.request.urlopen(req).read() # x11\xd3\xdb\xd3\xf2\xab\
-        urlopen.append(res)
-
-    '''image list'''
-    img_list = []
-    # res 이미지로 변환
-    for res in urlopen:
-        image_nparray = np.asarray(bytearray(res), dtype=np.uint8)
-        image = cv2.imdecode(image_nparray, cv2.IMREAD_COLOR)
-        img_list.append(image)
-        
-    return faces_url_list, img_list # url, image
-
-        
-
-            
-        
-        
+ 
 
 def video_detection():
-    url_list, img_list = url_img() # url과 이미지가 담긴 리스트
+    url_list, img_list = url_img('faces.txt') # url과 이미지가 담긴 리스트
     
     '''step 1'''
     '''profile image하나씩'''
