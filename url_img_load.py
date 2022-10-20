@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import urllib.request
 
+'''url로 이미지를 받을 경우'''
 def url_img(file):
     faces_url_list = [] # url리스트
     '''faces.txt 에서 url리스트를 가져온다'''
@@ -31,5 +32,5 @@ def url_img(file):
         image_nparray = np.asarray(bytearray(res), dtype=np.uint8)
         image = cv2.imdecode(image_nparray, cv2.IMREAD_COLOR)
         img_list.append(image)
-        
+
     return faces_url_list, img_list # url, image
