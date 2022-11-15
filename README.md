@@ -1,21 +1,19 @@
-# google mediapipe [READE.md]
-
-```markdown
 # google mediapipe
 
+
 ```
-google_mediapipe_face_rec
-├─ detection.py
-├─ guide
-│  └─ guide_face.png
-├─ guide.py
-├─ image data
-│  ├─ JeongWoo
-│  ├─ JiHyo
-│  ├─ JungJae
-		:
-		:
-├─ landmark_roc.txt
+google_mediapipe_face_rec   
+├─ detection.py   
+├─ guide   
+│  └─ guide_face.png   
+├─ guide.py   
+├─ image data   
+│  ├─ JeongWoo   
+│  ├─ JiHyo   
+│  ├─ JungJae   
+		:   
+		:   
+├─ landmark_roc.txt   
 
 ```
 ```
