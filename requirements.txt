@@ -13,3 +13,4 @@ requests
 imutils
 mediapipe
 sklearn
+pandas
