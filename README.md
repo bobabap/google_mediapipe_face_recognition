@@ -40,7 +40,7 @@ google_mediapipe_face_rec
     ```
     
 3. 미간 기준 관자놀이 방향에 따라 얼굴 방향 오른쪽을 보도록 수정
-![Untitled (1)](https://user-images.githubusercontent.com/87513112/201913441-287896c3-be2b-4f5a-b437-c1534f9ca258.png){: width="100" height="100"}
+<img src=https://user-images.githubusercontent.com/87513112/201913441-287896c3-be2b-4f5a-b437-c1534f9ca258.png  width="200" height="400"/>
 
 ```python
 '''Symmetric alignment (face flip)'''
