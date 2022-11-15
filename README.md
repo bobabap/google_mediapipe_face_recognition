@@ -18,7 +18,7 @@ google_mediapipe_face_rec
 ```
 ```
 
-### **detection.py**
+### detection.py
 
 1. mediapipe 의 face_mesh를 이용해 얼굴을 인식하고 multi_face_landmarks 로 이미지상 얼굴 랜드마크 위치를 얻는다.
 2. 얼굴 랜드마크 중 가장 바깥 쪽에 있는 상,하,좌,우 점을 기준으로 +10 -10 하여 얼굴 부분만 자른다.
