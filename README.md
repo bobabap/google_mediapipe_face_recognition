@@ -1,4 +1,4 @@
-# google mediapipe [READE.md](README.md)
+# google mediapipe [READE.md]
 
 ```markdown
 # google mediapipe
