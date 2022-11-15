@@ -9,16 +9,11 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import glob
 import time
-import torch
 import cv2
-from PIL import Image
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from facenet_pytorch.models.inception_resnet_v1 import get_torch_home
 import face_recognition    
-from skimage.metrics import structural_similarity as ssim
-from img2vec_pytorch import Img2Vec
 
 mp_drawing = mp.solutions.drawing_utils
 mp_face_mesh = mp.solutions.face_mesh
@@ -38,9 +33,9 @@ def D(file):
         # Print and draw face mesh landmarks on the image.
         if not results.multi_face_landmarks:
             print("worning")
-        annotated_image = image.copy() 
+        img = image.copy() 
 
-        height, width = annotated_image.shape[:2]
+        height, width = img.shape[:2]
 
 
         for face_landmarks in results.multi_face_landmarks:
@@ -60,35 +55,35 @@ def D(file):
                     y_min = y
                 if y > y_max:
                     y_max = y
-                # cv2.circle(annotated_image, (x,y), 1, (250, 5, 0), -1)
+                # cv2.circle(img, (x,y), 1, (250, 5, 0), -1)
         
         '''------------------------imshow---------------------------'''
-        # cv2.imshow('Image', annotated_image)
+        # cv2.imshow('Image', img)
         # cv2.waitKey(0)
-        annotated_image = annotated_image[y_min-10:y_max+10, x_min-10:x_max+10]
+        img = img[y_min-10:y_max+10, x_min-10:x_max+10]
 
-        '''---------------Symmetric alignment---------------'''
         mid_head_x = int(face_landmarks.landmark[10].x * width) # 미간
         mid_chin_x = int(face_landmarks.landmark[152].x * width) # 턱끝
         nose_tip_x = int(face_landmarks.landmark[4].x * height) # 코끝
         left_temple_x = int(face_landmarks.landmark[21].x * width) # 왼쪽 관자놀이
         right_temple_x = int(face_landmarks.landmark[251].x * width) # 오른쪽 관자놀이
 
-        # 얼굴이 왼쪽 방향인 경우 플립
+        '''------------------------Symmetric alignment (face flip)---------------------------'''
+        # 미간 기준 관자놀이 방향에 따라 얼굴 방향 오른쪽을 보도록 수정
         if nose_tip_x < left_temple_x:
-            annotated_image = cv2.flip(annotated_image, 1)
+            img = cv2.flip(img, 1)
         else:
             if right_temple_x < nose_tip_x:
                 pass
             else:
                 if abs(mid_head_x - left_temple_x) < abs(right_temple_x - mid_head_x): # 왼쪽방향 얼굴 x축 반전
-                    annotated_image = cv2.flip(annotated_image, 1)
+                    img = cv2.flip(img, 1)
         '''------------------------reset process-------------------------'''
-        results = face_mesh.process(annotated_image)
+        results = face_mesh.process(img)
         if not results.multi_face_landmarks:
             print("worning")
                     
-        height, width = annotated_image.shape[:2]
+        height, width = img.shape[:2]
         
         for face_landmarks in results.multi_face_landmarks:
             
@@ -98,24 +93,25 @@ def D(file):
             mid_head_y = int(face_landmarks.landmark[10].y * height)
 
             '''---------------Image Rotation---------------'''
+            # 턱 끝과 양쪽 관자놀이를 기준으로 수평 변환
             tan_theta = (mid_chin_x - mid_head_x)/(mid_chin_y - mid_head_y)
             theta = np.arctan(tan_theta)
             rotate_angle = theta *180/math.pi
-            image_center = tuple(np.array(annotated_image.shape[1::-1]) / 2)
+            image_center = tuple(np.array(img.shape[1::-1]) / 2)
             rot_mat = cv2.getRotationMatrix2D((image_center), -rotate_angle, 1.0)
-            annotated_image  = cv2.warpAffine(annotated_image, rot_mat, annotated_image.shape[1::-1], flags=cv2.INTER_LANCZOS4, borderValue=(0,0,0))
+            img  = cv2.warpAffine(img, rot_mat, img.shape[1::-1], flags=cv2.INTER_LANCZOS4, borderValue=(0,0,0))
             '''------------------------imshow---------------------------'''
-            # cv2.imshow('Image', annotated_image)
+            # cv2.imshow('Image', img)
             # cv2.waitKey(0)
-            annotated_image = cv2.resize(annotated_image, (300, 300))
+            img = cv2.resize(img, (300, 300))
 
             '''------------------------reset process-------------------------'''
-            results = face_mesh.process(annotated_image)
+            results = face_mesh.process(img)
             
             if not results.multi_face_landmarks:
                 continue
                 
-            height, width = annotated_image.shape[:2]
+            height, width = img.shape[:2]
             for face_landmarks in results.multi_face_landmarks:
                 x_min = width
                 x_max = 0
@@ -149,7 +145,8 @@ def D(file):
             
             g_nose_mid_x, g_nose_mid_y, g_mid_lib_x, g_mid_lib_y, g_left_eye_x, g_left_eye_y, g_right_eye_x, g_right_eye_y, g_nose_tip_x, g_nose_tip_y, g_mid_chin_x, g_mid_chin_y, g_left_cheek_x, g_left_cheek_y, g_right_cheek_x, g_right_cheek_y, g_mid_head_x, g_mid_head_y, g_left_temple_x, g_left_temple_y, g_right_temple_x, g_right_temple_y = guide_image(height, width)
 
-
+            '''------------------------Affine Transfomation-------------------------'''
+            # guide 사진에 맞춰 아핀 변환
             # [x,y] 좌표점을 4x2의 행렬로 작성
             # 좌표점은 좌상->좌하->우상->우하
             pts1 = np.float32([[left_temple_x, left_temple_y],[left_cheek_x, left_cheek_y],[right_temple_x, right_temple_y],[right_cheek_x, right_cheek_y]])
@@ -159,22 +156,20 @@ def D(file):
 
             M = cv2.getPerspectiveTransform(pts1, pts2)
 
-            annotated_image = cv2.warpPerspective(annotated_image, M, (200,180), flags=cv2.INTER_LANCZOS4, borderValue=(0,0,0))
+            img = cv2.warpPerspective(img, M, (200,180), flags=cv2.INTER_LANCZOS4, borderValue=(0,0,0))
             
-            
-            # cv2.imshow('Image', annotated_image)
+            # cv2.imshow('Image', img)
             # cv2.waitKey(0)
 
 
 
             '''------------------------imshow---------------------------'''
-            # annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2GRAY)
+            # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                         
-            cv2.imshow('Image', annotated_image)
+            cv2.imshow('Image', img)
             cv2.waitKey(0)
             
-    return annotated_image
-
+    return img
 
 
 # def run():
@@ -194,25 +189,13 @@ def jaccard_similarity(x, y):
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * (np.linalg.norm(b)))
 
-from scipy.stats import pearsonr
 def pearson_similarity(a, b):
     return np.dot((a - np.mean(a)), (b - np.mean(b))) / ((np.linalg.norm(a - np.mean(a))) * (np.linalg.norm(b - np.mean(b))))
 '''-------run-------'''
 
 
-img2vec = Img2Vec(cuda=(torch.cuda.is_available()))
-def img2vec(img):
-    # Initialize Img2Vec with GPU
-    img2vec = Img2Vec(cuda=True)
-
-    # Get a vector from img2vec, returned as a torch FloatTensor
-    vec = img2vec.get_vec(img, tensor=True)
-
-
 def run():
-    
-    print(torch.cuda.get_device_name(torch.cuda.current_device()))
-    # img_list = [D(img) for img in glob.glob('./image data/minjung/*.jpg')]
+    img_list = [D(img) for img in glob.glob('./image data/minjung/*.jpg')]
     
     # IMAGE_FILES = os.listdir('./image data/minjung/')
 
@@ -223,6 +206,8 @@ def run():
     #     print(f"{A_name}와 {name}의 Similarity: {score}")
 '''------------------------------------------'''
 
+# 윤곽 자르기
+# https://a292run.tistory.com/entry/Facial-Landmarks-for-Face-Recognition-with-Dlib-1
    
 
 if __name__ == '__main__':
@@ -230,15 +215,11 @@ if __name__ == '__main__':
     
     
 
-
-
-
-
     # 저장시
     # for n, i in enumerate(imgs):
     #     cv2.imwrite(f'crop_{n}.jpg', i)
     
-''' ORB 기술자를 사용한 특징점 비교'''
+''' ORB 기술자를 사용한 특징점 비교 '''
     # for image in img_list[1:]:
     #     img1 = img_list[0] # queryImage
     #     img2 = image # trainImage
@@ -264,14 +245,14 @@ if __name__ == '__main__':
     
     
 '''랜드마크 저장'''
-            # results = face_mesh.process(annotated_image)
+            # results = face_mesh.process(img)
             
             # if not results.multi_face_landmarks:
             #     continue
             
             # landmark = []
             
-            # height, width = annotated_image.shape[:2]
+            # height, width = img.shape[:2]
             # for face_landmarks in results.multi_face_landmarks:
             #     x_min = width
             #     x_max = 0
