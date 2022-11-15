@@ -103,7 +103,7 @@ img = cv2.warpPerspective(img, M, (200,180), flags=cv2.INTER_LANCZOS4, borderVal
 
 guide — guide_face.png
 
-![Guide 이미지](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/89c111e0-ff26-4d09-8541-29110d0a79c0/guide_face.png)
+![guide_face](https://user-images.githubusercontent.com/87513112/201913277-6f4d1955-cc32-4cbc-bf07-f156c150684c.png)
 
 Guide 이미지
 
