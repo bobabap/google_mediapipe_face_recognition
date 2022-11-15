@@ -40,7 +40,7 @@ google_mediapipe_face_rec
     ```
     
 3. 미간 기준 관자놀이 방향에 따라 얼굴 방향 오른쪽을 보도록 수정
-<img src=https://user-images.githubusercontent.com/87513112/201913441-287896c3-be2b-4f5a-b437-c1534f9ca258.png  width="200" height="400"/>
+<img src=https://user-images.githubusercontent.com/87513112/201913441-287896c3-be2b-4f5a-b437-c1534f9ca258.png  width="300" height="300"/>
 
 ```python
 '''Symmetric alignment (face flip)'''
@@ -64,7 +64,7 @@ if not results.multi_face_landmarks:
 ```
 
 5. 턱 끝과 양쪽 관자놀이를 기준으로 수평 변환
-![Untitled (2)](https://user-images.githubusercontent.com/87513112/201913457-be03c506-6746-4c4f-8ceb-87969fdab011.png){: width="100" height="100"}
+<img src=https://user-images.githubusercontent.com/87513112/201913457-be03c506-6746-4c4f-8ceb-87969fdab011.png  width="300" height="300"/>
 
 ```python
 '''Image Rotation'''
@@ -83,7 +83,7 @@ img = cv2.resize(img, (300, 300))
 ```
 
 7. guide 사진에 맞춰 Affine 변환
-![Untitled (3)](https://user-images.githubusercontent.com/87513112/201913501-05b8c7bd-645e-477e-ad9c-cbdbc7267016.png){: width="100" height="100"}
+<img src=https://user-images.githubusercontent.com/87513112/201913501-05b8c7bd-645e-477e-ad9c-cbdbc7267016.png  width="300" height="300"/>
 
 ```
 '''Affine Transfomation'''
@@ -106,7 +106,7 @@ img = cv2.warpPerspective(img, M, (200,180), flags=cv2.INTER_LANCZOS4, borderVal
 
 guide — guide_face.png
 
-![guide_face](https://user-images.githubusercontent.com/87513112/201913277-6f4d1955-cc32-4cbc-bf07-f156c150684c.png){: width="100" height="100"}
+<img src=https://user-images.githubusercontent.com/87513112/201913277-6f4d1955-cc32-4cbc-bf07-f156c150684c.png  width="300" height="300"/>
 
 Guide 이미지
 
